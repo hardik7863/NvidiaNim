@@ -1,8 +1,8 @@
-# Nvidia NIM
+# Nvidia NIM 🚀
 
 This project is a Streamlit application that uses NVIDIA AI endpoints to analyze and answer questions based on US Census documents.
 
-## Project Structure
+## Project Structure 📁
 
 ```
 .env
@@ -17,7 +17,7 @@ us_census/
     p70-178.pdf
 ```
 
-## Setup
+## Setup 🛠️
 
 1. **Clone the repository:**
     ```sh
@@ -42,26 +42,36 @@ us_census/
         NVIDIA_API_KEY="your-nvidia-api-key"
         ```
 
-## Running the Application
+## Running the Application ▶️
 
 To run the Streamlit application, use the following command:
 ```sh
 streamlit run app1.py
 ```
 
-## Files
+## Files 📄
 
 - **app1.py**: The main Streamlit application file.
 - **testapp.py**: A script to test the NVIDIA API integration.
 - **requirements.txt**: A list of dependencies required for the project.
 - **us_census/**: A directory containing US Census PDF documents.
 
-## Usage
+## Usage 💡
 
 1. Open the Streamlit application in your browser.
 2. Click on the "Documents Embedding" button to create the vector store database.
 3. Enter your question in the text input field and get answers based on the provided context from the US Census documents.
 
-## License
+## Deployment 🌐
+
+You can deploy this application using Streamlit Sharing, Heroku, or any other platform that supports Python web applications. For example, to deploy on Streamlit Sharing:
+
+1. Push your code to a GitHub repository.
+2. Go to [Streamlit Sharing](https://share.streamlit.io/).
+3. Connect your GitHub repository and deploy the application.
+
+**Deployment Link:** [Nvidia NIM on Streamlit](https://share.streamlit.io/hardik7863/NvidiaNim)
+
+## License 📜
 
 This project is licensed under the MIT License.
