@@ -12,42 +12,48 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import create_retrieval_chain
 from langchain_community.vectorstores import FAISS
 
-# Load environment variables
+# ✅ Load environment variables
 load_dotenv()
 
-# ✅ Get NVIDIA API Key Safely
-NVIDIA_API_KEY = st.secrets.get("NVIDIA_API_KEY")  # Use Streamlit secrets
-if not NVIDIA_API_KEY:
-    st.error("❌ NVIDIA API Key is missing! Add it in Streamlit secrets.")
+# ✅ Fetch API key from Streamlit Secrets (Required for Cloud Deployment)
+if "NVIDIA_API_KEY" in st.secrets:
+    os.environ["NVIDIA_API_KEY"] = st.secrets["NVIDIA_API_KEY"]
+else:
+    st.error("❌ NVIDIA API Key is missing! Add it in Streamlit Secrets.")
     st.stop()
 
-# ✅ Initialize NVIDIA API Key
-os.environ["NVIDIA_API_KEY"] = NVIDIA_API_KEY
-
 # Streamlit UI
-st.title("Nvidia NIM")
-st.subheader("RAG App on US Census")
+st.title("🔍 Nvidia NIM: US Census AI Assistant")
+st.subheader("📚 RAG App for US Census Data")
 
 # ✅ Function to Create Vector Embeddings
 def vector_embedding():
     if "vectors" not in st.session_state:
         st.write("🔄 Processing documents for embeddings...")
 
-        # Initialize NVIDIA embeddings
-        st.session_state.embeddings = NVIDIAEmbeddings()
+        try:
+            # Initialize NVIDIA embeddings
+            st.session_state.embeddings = NVIDIAEmbeddings()
 
-        # Load PDFs
-        st.session_state.loader = PyPDFDirectoryLoader("./us_census")
-        st.session_state.docs = st.session_state.loader.load()
+            # Load PDFs
+            st.session_state.loader = PyPDFDirectoryLoader("./us_census")
+            st.session_state.docs = st.session_state.loader.load()
 
-        # Split documents into chunks
-        st.session_state.text_splitter = RecursiveCharacterTextSplitter(chunk_size=700, chunk_overlap=50)
-        st.session_state.final_documents = st.session_state.text_splitter.split_documents(st.session_state.docs[:30])
+            if not st.session_state.docs:
+                st.error("⚠️ No documents found! Please check the './us_census' directory.")
+                return
 
-        # Create vector store using FAISS
-        st.session_state.vectors = FAISS.from_documents(st.session_state.final_documents, st.session_state.embeddings)
+            # Split documents into chunks
+            st.session_state.text_splitter = RecursiveCharacterTextSplitter(chunk_size=700, chunk_overlap=50)
+            st.session_state.final_documents = st.session_state.text_splitter.split_documents(st.session_state.docs[:30])
 
-        st.success("✅ Vector Store DB is Ready!")
+            # Create vector store using FAISS
+            st.session_state.vectors = FAISS.from_documents(st.session_state.final_documents, st.session_state.embeddings)
+
+            st.success("✅ Vector Store DB is Ready!")
+
+        except Exception as e:
+            st.error(f"⚠️ Error in vector embedding: {str(e)}")
 
 # Initialize LLM
 llm = ChatNVIDIA(model="meta/llama-3.3-70b-instruct")
@@ -65,7 +71,7 @@ prompt = ChatPromptTemplate.from_template(
 )
 
 # User Input
-prompt1 = st.text_input("Enter Your Question from Documents", placeholder="What is the job status in US?")
+prompt1 = st.text_input("📝 Enter Your Question from Documents", placeholder="What is the job status in US?")
 
 # Button to Generate Embeddings
 if st.button("📚 Documents Embedding"):
@@ -76,22 +82,26 @@ if prompt1:
     if "vectors" not in st.session_state:
         st.warning("⚠️ Please click 'Documents Embedding' first to generate vectors.")
     else:
-        # Create Document Chain
-        document_chain = create_stuff_documents_chain(llm, prompt)
-        retriever = st.session_state.vectors.as_retriever()
-        retrieval_chain = create_retrieval_chain(retriever, document_chain)
+        try:
+            # Create Document Chain
+            document_chain = create_stuff_documents_chain(llm, prompt)
+            retriever = st.session_state.vectors.as_retriever()
+            retrieval_chain = create_retrieval_chain(retriever, document_chain)
 
-        # Start Processing
-        start = time.process_time()
-        response = retrieval_chain.invoke({'input': prompt1})
-        st.write(f"⏳ Response time: {time.process_time() - start:.2f} seconds")
+            # Start Processing
+            start = time.process_time()
+            response = retrieval_chain.invoke({'input': prompt1})
+            st.write(f"⏳ Response time: {time.process_time() - start:.2f} seconds")
 
-        # Display Response
-        st.write("### 🤖 Answer:")
-        st.write(response['answer'])
+            # Display Response
+            st.write("### 🤖 Answer:")
+            st.write(response['answer'])
 
-        # Expand for Similar Documents
-        with st.expander("📄 Document Similarity Search"):
-            for i, doc in enumerate(response["context"]):
-                st.write(doc.page_content)
-                st.write("🔹" * 20)
+            # Expand for Similar Documents
+            with st.expander("📄 Document Similarity Search"):
+                for i, doc in enumerate(response["context"]):
+                    st.write(doc.page_content)
+                    st.write("🔹" * 20)
+
+        except Exception as e:
+            st.error(f"⚠️ Error in processing query: {str(e)}")
