@@ -70,7 +70,7 @@ You can deploy this application using Streamlit Sharing, Heroku, or any other pl
 2. Go to [Streamlit Sharing](https://share.streamlit.io/).
 3. Connect your GitHub repository and deploy the application.
 
-**Deployment Link:** [Nvidia NIM on Streamlit](https://share.streamlit.io/hardik7863/NvidiaNim)
+**Deployment Link:** [Nvidia NIM on Streamlit](https://hardik7863-nvidianim-app1-2aih8a.streamlit.app/)
 
 ## License 📜
 
